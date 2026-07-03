@@ -92,7 +92,14 @@ df["Tags"] = df["Tags"].replace("", "Blank")
 df["Job Source"] = df["Job Source"].replace("", "Blank")
 df["Frequency"] = df["Frequency"].fillna("").astype(str).str.strip()
 
-# Keep 7 Days jobs only if Frequency exists
+# Combined Job Code + Title filter column
+df["Job"] = (
+    df["Job Code"].astype(str).str.strip()
+    + " - "
+    + df["Title"].astype(str).str.strip()
+)
+
+# Keep 7 Days jobs only
 df = df[
     df["Frequency"].str.contains("7", case=False, na=False) &
     df["Frequency"].str.contains("day", case=False, na=False)
@@ -107,11 +114,26 @@ st.sidebar.header("Filters")
 
 filtered_df = df.copy()
 
+# Search box for Job Code / Title
+st.sidebar.subheader("Search Job")
+
+search_job = st.sidebar.text_input(
+    "Search by Job Code or Title"
+)
+
+if search_job:
+    filtered_df = filtered_df[
+        filtered_df["Job"].str.contains(search_job, case=False, na=False)
+    ]
+
 filter_cols = [
     "Vessel",
     "Function",
     "Machinery Location",
     "Sub Component Location",
+    "Job",
+    "Job Code",
+    "Title",
     "Critical",
     "Tags",
     "Job Source",
